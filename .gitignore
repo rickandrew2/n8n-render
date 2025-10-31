@@ -1,0 +1,18 @@
+# Environment files
+.env
+.env.local
+
+# Node modules (if you add any)
+node_modules/
+
+# n8n data (if running locally)
+.n8n/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
