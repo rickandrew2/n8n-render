@@ -1,18 +1,17 @@
 services:
   - type: web
-    name: n8n-automation
+    name: n8n
     env: docker
     plan: free
-    dockerfilePath: ./Dockerfile
-    healthCheckPath: /
+    branch: main
+    healthCheckPath: /rest/healthz
     envVars:
-      # n8n will automatically use Render's PostgreSQL database if available
       - key: N8N_BASIC_AUTH_ACTIVE
         value: true
       - key: N8N_BASIC_AUTH_USER
-        sync: false  # Set this in Render dashboard as a secret
+        value: admin
       - key: N8N_BASIC_AUTH_PASSWORD
-        sync: false  # Set this in Render dashboard as a secret
+        value: password123
       - key: N8N_HOST
         value: 0.0.0.0
       - key: N8N_PORT
@@ -20,15 +19,25 @@ services:
       - key: N8N_PROTOCOL
         value: https
       - key: WEBHOOK_URL
-        generateValue: true  # Will be generated automatically
-      # Optional: Add encryption key for credentials
+        value: https://n8n-automation-ola1.onrender.com/
+      - key: GENERIC_TIMEZONE
+        value: Asia/Manila
+      # --- Supabase Postgres configuration ---
+      - key: DB_TYPE
+        value: postgresdb
+      - key: DB_POSTGRESDB_HOST
+        value: <YOUR_SUPABASE_HOST>
+      - key: DB_POSTGRESDB_PORT
+        value: 5432
+      - key: DB_POSTGRESDB_DATABASE
+        value: <YOUR_SUPABASE_DB_NAME>
+      - key: DB_POSTGRESDB_USER
+        value: <YOUR_SUPABASE_USER>
+      - key: DB_POSTGRESDB_PASSWORD
+        value: <YOUR_SUPABASE_PASSWORD>
+      # Use container CA bundle for SSL validation (required by Supabase)
+      - key: DB_POSTGRESDB_SSL_CA
+        value: /etc/ssl/certs/ca-certificates.crt
+      # Recommended for securing stored credentials
       # - key: N8N_ENCRYPTION_KEY
-      #   sync: false  # Set this in Render dashboard as a secret
-
-# Optional: Uncomment to add a PostgreSQL database
-# databases:
-#   - name: n8n-db
-#     plan: free
-#     databaseName: n8n
-#     user: n8n
-
+      #   generateValue: true
