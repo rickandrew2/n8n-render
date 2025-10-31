@@ -27,7 +27,7 @@ services:
       - key: DB_POSTGRESDB_HOST
         value: db.hxflyawtkojuytuvggza.supabase.co
       - key: DB_POSTGRESDB_PORT
-        value: 5432
+        value: 6543
       - key: DB_POSTGRESDB_DATABASE
         value: postgres
       - key: DB_POSTGRESDB_USER
@@ -39,6 +39,10 @@ services:
         value: 0.0.0.0
       - key: N8N_HOST
         value: n8n-automation-ola1.onrender.com
+      - key: N8N_LOG_LEVEL
+        value: debug
+      - key: NODE_OPTIONS
+        value: --dns-result-order=ipv4first
       # Recommended for securing stored credentials
       # - key: N8N_ENCRYPTION_KEY
       #   generateValue: true
