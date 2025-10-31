@@ -21,20 +21,21 @@ services:
         value: https://n8n-automation-ola1.onrender.com/
       - key: GENERIC_TIMEZONE
         value: Asia/Manila
-      # --- Supabase Postgres configuration ---
+      # --- Neon Postgres configuration ---
       - key: DB_TYPE
         value: postgresdb
       - key: DB_POSTGRESDB_HOST
-        value: db.hxflyawtkojuytuvggza.supabase.co
+        value: ep-noisy-poetry-a1fzvspo-pooler.ap-southeast-1.aws.neon.tech
       - key: DB_POSTGRESDB_PORT
-        value: 6543
+        value: 5432
       - key: DB_POSTGRESDB_DATABASE
-        value: postgres
+        value: neondb
       - key: DB_POSTGRESDB_USER
-        value: postgres
-      # Use container CA bundle for SSL validation (required by Supabase)
-      - key: DB_POSTGRESDB_SSL_CA
-        value: /etc/ssl/certs/ca-certificates.crt
+        value: neondb_owner
+      - key: DB_POSTGRESDB_SSLMODE
+        value: require
+      - key: DB_POSTGRESDB_PASSWORD
+        sync: false
       - key: N8N_LISTEN_ADDRESS
         value: 0.0.0.0
       - key: N8N_HOST
