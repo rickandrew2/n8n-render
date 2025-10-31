@@ -12,8 +12,7 @@ services:
         value: admin
       - key: N8N_BASIC_AUTH_PASSWORD
         value: password123
-      - key: N8N_HOST
-        value: 0.0.0.0
+      # Listening address and external host are specified below
       - key: N8N_PORT
         value: 5678
       - key: N8N_PROTOCOL
@@ -26,18 +25,20 @@ services:
       - key: DB_TYPE
         value: postgresdb
       - key: DB_POSTGRESDB_HOST
-        value: <YOUR_SUPABASE_HOST>
+        value: db.hxflyawtkojuytuvggza.supabase.co
       - key: DB_POSTGRESDB_PORT
         value: 5432
       - key: DB_POSTGRESDB_DATABASE
-        value: <YOUR_SUPABASE_DB_NAME>
+        value: postgres
       - key: DB_POSTGRESDB_USER
-        value: <YOUR_SUPABASE_USER>
-      - key: DB_POSTGRESDB_PASSWORD
-        value: <YOUR_SUPABASE_PASSWORD>
+        value: postgres
       # Use container CA bundle for SSL validation (required by Supabase)
       - key: DB_POSTGRESDB_SSL_CA
         value: /etc/ssl/certs/ca-certificates.crt
+      - key: N8N_LISTEN_ADDRESS
+        value: 0.0.0.0
+      - key: N8N_HOST
+        value: n8n-automation-ola1.onrender.com
       # Recommended for securing stored credentials
       # - key: N8N_ENCRYPTION_KEY
       #   generateValue: true
