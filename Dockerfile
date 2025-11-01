@@ -1,8 +1,9 @@
-# Use official n8n image
-FROM n8nio/n8n:latest
+# Official n8n Docker image from n8n's registry
+FROM docker.n8n.io/n8nio/n8n:latest
 
-# Expose port 5678 (Render will map it automatically)
+# Expose port 5678
 EXPOSE 5678
 
-# Start n8n
-CMD ["n8n", "start"]
+# The image has a default entrypoint that runs n8n correctly
+# No need to override CMD - let the image use its default
+
