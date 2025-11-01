@@ -4,7 +4,6 @@ services:
     env: docker
     plan: free
     branch: main
-    healthCheckPath: /rest/healthz
     envVars:
       # Server Configuration
       - key: N8N_PORT
