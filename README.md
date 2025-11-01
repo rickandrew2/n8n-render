@@ -39,26 +39,43 @@ This repository contains the configuration files to deploy n8n (a powerful workf
 
 ### Step 3: Set Environment Variables
 
-In your Render service settings, go to **Environment** and add:
+In your Render service settings, go to **Environment** and add variables. See `.env.example` for a complete list.
 
 #### Required Variables:
 
+**Authentication:**
 ```
 N8N_BASIC_AUTH_ACTIVE=true
 N8N_BASIC_AUTH_USER=your_username
 N8N_BASIC_AUTH_PASSWORD=your_secure_password
-N8N_HOST=0.0.0.0
-N8N_PORT=5678
-N8N_PROTOCOL=https
 ```
 
-#### Optional Variables:
+**Neon Database:**
+```
+DB_TYPE=postgresdb
+DB_POSTGRESDB_HOST=your-neon-host
+DB_POSTGRESDB_DATABASE=neondb
+DB_POSTGRESDB_USER=neondb_owner
+DB_POSTGRESDB_PASSWORD=your-neon-password
+DB_POSTGRESDB_SSLMODE=require
+```
+
+**Service URLs** (set after deployment):
+```
+N8N_HOST=your-service-name.onrender.com
+WEBHOOK_URL=https://your-service-name.onrender.com/
+```
+
+#### Recommended Variables:
 
 ```
-N8N_ENCRYPTION_KEY=your_32_character_encryption_key  # For securing credentials
+N8N_ENCRYPTION_KEY=your_32_character_encryption_key  # Generate with: openssl rand -hex 16
 ```
 
-**Important**: Make sure to mark sensitive variables as "Secret" in Render (they'll be hidden)
+**Important**: 
+- Mark ALL passwords and keys as "Secret" in Render (they'll be hidden)
+- Copy values from `.env.example` and customize them
+- `WEBHOOK_URL` and `N8N_HOST` should match your actual Render service URL
 
 ### Step 4: Wait for Deployment
 
@@ -80,19 +97,36 @@ N8N_ENCRYPTION_KEY=your_32_character_encryption_key  # For securing credentials
 - **render.yaml**: Blueprint for automated deployment
 - **README.md**: This file!
 
-### Database (Optional)
+### Database (Required - Neon PostgreSQL)
 
-The render.yaml includes an optional PostgreSQL database section (commented out). To enable it:
+This setup uses **Neon** (free PostgreSQL cloud service) instead of Render's database.
 
-1. Uncomment the `databases` section in `render.yaml`
-2. Add the database URL environment variable in Render:
-   ```
-   DB_TYPE=postgresdb
-   DB_POSTGRESDB_HOST=n8n-db
-   DB_POSTGRESDB_USER=n8n
-   DB_POSTGRESDB_PASSWORD=(auto-set by Render)
-   DB_POSTGRESDB_DATABASE=n8n
-   ```
+#### Step 1: Create Neon Database
+1. Go to [Neon Console](https://console.neon.tech) and sign up
+2. Create a new project (name it `n8n-db` or similar)
+3. Note your connection details:
+   - Host (e.g., `ep-xxxxx.ap-southeast-1.aws.neon.tech`)
+   - Database name (usually `neondb`)
+   - Username (usually `neondb_owner`)
+   - Password (copy from Neon dashboard)
+
+#### Step 2: Add Database Variables in Render
+In Render Dashboard → Your Service → Environment, add:
+
+```
+DB_TYPE=postgresdb
+DB_POSTGRESDB_HOST=your-neon-host-here
+DB_POSTGRESDB_PORT=5432
+DB_POSTGRESDB_DATABASE=neondb
+DB_POSTGRESDB_USER=neondb_owner
+DB_POSTGRESDB_PASSWORD=your-neon-password
+DB_POSTGRESDB_SSLMODE=require
+```
+
+⚠️ **Important**: Mark `DB_POSTGRESDB_PASSWORD` as a **Secret** in Render!
+
+#### Step 3: Verify Connection
+After deployment, n8n will automatically create required tables in your Neon database.
 
 ### Free Tier Limitations
 
