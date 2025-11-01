@@ -1,0 +1,41 @@
+version: 1.0
+runtime: docker
+build:
+  commands:
+    build:
+      - echo "Building n8n Docker image"
+run:
+  runtime-version: latest
+  command: ""
+  network:
+    port: 5678
+    env: N8N_PORT
+  env:
+    - name: N8N_PORT
+      value: "5678"
+    - name: N8N_PROTOCOL
+      value: "https"
+    - name: N8N_LISTEN_ADDRESS
+      value: "0.0.0.0"
+    - name: N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS
+      value: "true"
+    - name: N8N_RUNNERS_ENABLED
+      value: "true"
+    - name: GENERIC_TIMEZONE
+      value: "Asia/Manila"
+    - name: TZ
+      value: "Asia/Manila"
+    - name: N8N_BASIC_AUTH_ACTIVE
+      value: "true"
+    # Database Configuration - Set these in AWS App Runner console
+    - name: DB_TYPE
+      value: "postgresdb"
+    - name: DB_POSTGRESDB_PORT
+      value: "5432"
+    - name: DB_POSTGRESDB_SSLMODE
+      value: "require"
+    - name: DB_POSTGRESDB_SSL
+      value: "true"
+    - name: DB_POSTGRESDB_SSL_REJECT_UNAUTHORIZED
+      value: "false"
+
