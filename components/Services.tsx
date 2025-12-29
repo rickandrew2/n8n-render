@@ -79,24 +79,24 @@ export default function Services() {
   };
 
   return (
-    <section id="services" className="bg-muted/30 py-24 px-4 sm:px-6 lg:px-8">
+    <section id="services" className="bg-muted/30 py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl">
         {/* Header Section */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent text-accent-foreground text-sm font-medium mb-6">
-            <span className="w-2 h-2 rounded-full bg-primary" />
+        <div className="text-center mb-12 sm:mb-16">
+          <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-accent text-accent-foreground text-xs sm:text-sm font-medium mb-4 sm:mb-6">
+            <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-primary" />
             Our Expertise
           </div>
-          <h2 className="text-4xl sm:text-5xl font-bold text-foreground mb-4">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-3 sm:mb-4">
             How We Help You
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto px-2">
             Our team of experts is dedicated to helping you achieve your automation goals.
           </p>
         </div>
 
         {/* Services Accordion */}
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           {services.map((service, index) => {
             const isExpanded = expandedIndex === index || clickedIndex === index;
             const serviceNumber = String(index + 1).padStart(2, "0");
@@ -105,7 +105,7 @@ export default function Services() {
               <div
                 key={index}
                 className={cn(
-                  "relative rounded-2xl transition-all duration-700 ease-in-out cursor-pointer overflow-hidden group",
+                  "relative rounded-xl sm:rounded-2xl transition-all duration-700 ease-in-out cursor-pointer overflow-hidden group",
                   "border bg-card",
                   isExpanded
                     ? "border-primary/30 shadow-xl shadow-primary/10"
@@ -123,13 +123,13 @@ export default function Services() {
                   )}
                 />
 
-                <div className="p-6 sm:p-8">
-                  <div className="flex items-start gap-5">
+                <div className="p-4 sm:p-6 lg:p-8">
+                  <div className="flex items-start gap-3 sm:gap-5">
                     {/* Service Number & Icon */}
                     <div className="flex-shrink-0 flex flex-col items-center gap-2">
                       <div
                         className={cn(
-                          "w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-500 ease-in-out",
+                          "w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center transition-all duration-500 ease-in-out",
                           isExpanded
                             ? "bg-primary text-white shadow-lg shadow-primary/30"
                             : "bg-muted text-muted-foreground group-hover:bg-accent group-hover:text-accent-foreground"
@@ -152,7 +152,7 @@ export default function Services() {
                       {/* Title */}
                       <h3
                         className={cn(
-                          "text-xl sm:text-2xl font-bold mb-2 transition-colors duration-300",
+                          "text-lg sm:text-xl lg:text-2xl font-bold mb-2 transition-colors duration-300",
                           isExpanded ? "text-foreground" : "text-foreground"
                         )}
                       >
@@ -160,12 +160,12 @@ export default function Services() {
                       </h3>
 
                       {/* Sub-categories */}
-                      <div className="flex flex-wrap gap-2 mb-3">
+                      <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-2 sm:mb-3">
                         {service.subCategories.map((cat, i) => (
                           <span
                             key={i}
                             className={cn(
-                              "px-3 py-1 rounded-full text-xs font-medium transition-all duration-500 ease-in-out",
+                              "px-2 sm:px-3 py-1 rounded-full text-xs font-medium transition-all duration-500 ease-in-out",
                               isExpanded
                                 ? "bg-primary/10 text-primary"
                                 : "bg-muted text-muted-foreground"
@@ -185,7 +185,7 @@ export default function Services() {
                             : "max-h-0 opacity-0 mt-0"
                         )}
                       >
-                        <p className="text-base text-muted-foreground leading-relaxed mb-6">
+                        <p className="text-sm sm:text-base text-muted-foreground leading-relaxed mb-4 sm:mb-6">
                           {service.description}
                         </p>
                         <button
@@ -193,25 +193,25 @@ export default function Services() {
                             e.stopPropagation();
                             scrollToContact();
                           }}
-                          className="group/btn inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-white font-medium text-sm transition-all duration-300 hover:bg-primary-dark shadow-md shadow-primary/30 hover:shadow-lg hover:shadow-primary/40"
+                          className="group/btn inline-flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 rounded-full bg-primary text-white font-medium text-xs sm:text-sm transition-all duration-300 hover:bg-primary-dark shadow-md shadow-primary/30 hover:shadow-lg hover:shadow-primary/40"
                         >
                           Discuss Project
-                          <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1" />
+                          <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-300 group-hover/btn:translate-x-1" />
                         </button>
                       </div>
                     </div>
 
                     {/* Expand indicator */}
-                    <div className="flex-shrink-0 hidden sm:block">
+                    <div className="flex-shrink-0 hidden lg:block">
                       <div
                         className={cn(
-                          "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-500 ease-in-out",
+                          "w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all duration-500 ease-in-out",
                           isExpanded
                             ? "bg-primary text-white rotate-90"
                             : "bg-muted text-muted-foreground group-hover:bg-accent"
                         )}
                       >
-                        <ArrowRight className="w-4 h-4" />
+                        <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       </div>
                     </div>
                   </div>

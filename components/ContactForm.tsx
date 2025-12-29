@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect, useRef } from "react";
 import {
   validateContactForm,
   formatContactPayload,
@@ -10,6 +10,7 @@ import {
 // Constants for form behavior
 const SUCCESS_MESSAGE_DURATION = 5000; // milliseconds
 const DEFAULT_API_ENDPOINT = "/api/contact";
+const SUBMISSION_COOLDOWN = 60000; // 60 seconds cooldown between submissions
 
 // Error messages for form submission
 const FORM_ERROR_MESSAGES = {
@@ -52,6 +53,18 @@ export default function ContactForm() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [lastSubmissionTime, setLastSubmissionTime] = useState<number | null>(null);
+  const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
+  const cooldownIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cleanup interval on unmount
+  useEffect(() => {
+    return () => {
+      if (cooldownIntervalRef.current) {
+        clearInterval(cooldownIntervalRef.current);
+      }
+    };
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -68,6 +81,17 @@ export default function ContactForm() {
     e.preventDefault();
     setErrors({});
     setIsSuccess(false);
+
+    // Rate limiting: Check if user is in cooldown period
+    const now = Date.now();
+    if (lastSubmissionTime && now - lastSubmissionTime < SUBMISSION_COOLDOWN) {
+      const remaining = Math.ceil((SUBMISSION_COOLDOWN - (now - lastSubmissionTime)) / 1000);
+      setErrors({
+        submit: `Please wait ${remaining} second${remaining !== 1 ? 's' : ''} before submitting again.`,
+      });
+      setCooldownRemaining(remaining);
+      return;
+    }
 
     // Client-side validation
     const validation = validateContactForm(formData);
@@ -106,11 +130,35 @@ export default function ContactForm() {
       // Success - form will be reset and success message shown
       setIsSuccess(true);
       setFormData({ name: "", email: "", interest: "", message: "" });
+      const submissionTime = Date.now();
+      setLastSubmissionTime(submissionTime);
+      setCooldownRemaining(Math.ceil(SUBMISSION_COOLDOWN / 1000));
 
       // Reset success message after configured duration
       setTimeout(() => {
         setIsSuccess(false);
       }, SUCCESS_MESSAGE_DURATION);
+
+      // Update cooldown countdown
+      // Clear any existing interval first
+      if (cooldownIntervalRef.current) {
+        clearInterval(cooldownIntervalRef.current);
+      }
+      
+      cooldownIntervalRef.current = setInterval(() => {
+        const timeSinceSubmission = Date.now() - submissionTime;
+        const remaining = Math.ceil((SUBMISSION_COOLDOWN - timeSinceSubmission) / 1000);
+        
+        if (remaining <= 0) {
+          setCooldownRemaining(0);
+          if (cooldownIntervalRef.current) {
+            clearInterval(cooldownIntervalRef.current);
+            cooldownIntervalRef.current = null;
+          }
+        } else {
+          setCooldownRemaining(remaining);
+        }
+      }, 1000);
     } catch (error) {
       setErrors({
         submit:
@@ -124,7 +172,7 @@ export default function ContactForm() {
   };
 
   return (
-    <section id="contact" className="relative bg-gradient-to-b from-black via-gray-900 to-primary-dark py-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
+    <section id="contact" className="relative bg-gradient-to-b from-black via-gray-900 to-primary-dark py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
       {/* Subtle texture overlay for speckled effect */}
       <div className="absolute inset-0 opacity-30">
         <div className="absolute inset-0" style={{
@@ -134,20 +182,20 @@ export default function ContactForm() {
       </div>
       
       <div className="relative mx-auto max-w-7xl">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-16 items-center">
           {/* Left side - SAY HELLO section */}
           <div className="text-white">
-            <h2 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-6">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6">
               SAY HELLO!
             </h2>
-            <p className="text-lg sm:text-xl text-white leading-relaxed">
+            <p className="text-base sm:text-lg lg:text-xl text-white leading-relaxed">
               Have a project in mind? Let's discuss how we can help automate and optimize your business processes with AI-powered solutions. We're here to transform your ideas into reality.
             </p>
           </div>
 
           {/* Right side - Contact Form */}
           <div className="bg-transparent">
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
               <div className="space-y-2">
                 <input
                   type="text"
@@ -156,7 +204,7 @@ export default function ContactForm() {
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="block w-full bg-transparent border-0 border-b border-gray-600 pb-3 text-white placeholder:text-gray-500 focus:border-primary focus:outline-none transition-colors text-base"
+                  className="block w-full bg-transparent border-0 border-b border-gray-600 pb-2 sm:pb-3 text-white placeholder:text-gray-500 focus:border-primary focus:outline-none transition-colors text-sm sm:text-base"
                   placeholder="Your name here"
                 />
                 {errors.name && (
@@ -172,7 +220,7 @@ export default function ContactForm() {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="block w-full bg-transparent border-0 border-b border-gray-600 pb-3 text-white placeholder:text-gray-500 focus:border-primary focus:outline-none transition-colors text-base"
+                  className="block w-full bg-transparent border-0 border-b border-gray-600 pb-2 sm:pb-3 text-white placeholder:text-gray-500 focus:border-primary focus:outline-none transition-colors text-sm sm:text-base"
                   placeholder="Your email here"
                 />
                 {errors.email && (
@@ -187,13 +235,13 @@ export default function ContactForm() {
                   value={formData.interest}
                   onChange={handleChange}
                   required
-                  className="block w-full bg-transparent border-0 border-b border-gray-600 pb-3 text-white focus:border-primary focus:outline-none transition-colors text-base appearance-none cursor-pointer"
+                  className="block w-full bg-transparent border-0 border-b border-gray-600 pb-2 sm:pb-3 text-white focus:border-primary focus:outline-none transition-colors text-sm sm:text-base appearance-none cursor-pointer"
                   style={{
                     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%2314B8A6' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E")`,
                     backgroundRepeat: 'no-repeat',
                     backgroundPosition: 'right 0 center',
-                    backgroundSize: '1.5em 1.5em',
-                    paddingRight: '2rem'
+                    backgroundSize: '1.25em 1.25em',
+                    paddingRight: '1.75rem'
                   }}
                 >
                   <option value="" className="bg-black text-gray-500">What are you interested in?</option>
@@ -216,7 +264,7 @@ export default function ContactForm() {
                   value={formData.message}
                   onChange={handleChange}
                   required
-                  className="block w-full bg-transparent border-0 border-b border-gray-600 pb-3 text-white placeholder:text-gray-500 focus:border-primary focus:outline-none transition-colors resize-none text-base"
+                  className="block w-full bg-transparent border-0 border-b border-gray-600 pb-2 sm:pb-3 text-white placeholder:text-gray-500 focus:border-primary focus:outline-none transition-colors resize-none text-sm sm:text-base"
                   placeholder="Resume it in a few words"
                 />
                 {errors.message && (
@@ -241,10 +289,14 @@ export default function ContactForm() {
               <div className="pt-2">
                 <button
                   type="submit"
-                  disabled={isSubmitting}
-                  className="w-full rounded-lg border border-primary bg-black px-6 py-3 text-base font-medium text-white transition-all hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={isSubmitting || cooldownRemaining > 0}
+                  className="w-full rounded-lg border border-primary bg-black px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-medium text-white transition-all hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {isSubmitting ? "Sending..." : "Send Message"}
+                  {isSubmitting
+                    ? "Sending..."
+                    : cooldownRemaining > 0
+                    ? `Please wait ${cooldownRemaining}s...`
+                    : "Send Message"}
                 </button>
               </div>
             </form>

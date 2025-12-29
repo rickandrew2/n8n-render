@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateContactForm, formatContactPayload } from "@/lib/utils";
 import type { ContactFormData } from "@/lib/utils";
+import {
+  checkIpRateLimit,
+  checkEmailRateLimit,
+  getClientIp,
+} from "@/lib/rateLimit";
 
 // HTTP status codes
 const HTTP_STATUS = {
   OK: 200,
   BAD_REQUEST: 400,
   METHOD_NOT_ALLOWED: 405,
+  TOO_MANY_REQUESTS: 429,
   INTERNAL_SERVER_ERROR: 500,
 } as const;
 
@@ -17,6 +23,9 @@ const API_ERROR_MESSAGES = {
   INTERNAL_ERROR: "Internal server error",
   METHOD_NOT_ALLOWED: "Method not allowed",
   SUCCESS: "Form submitted successfully",
+  RATE_LIMIT_EXCEEDED: "Too many requests. Please try again later.",
+  RATE_LIMIT_IP: "Too many requests from this IP address. Please try again later.",
+  RATE_LIMIT_EMAIL: "Too many requests from this email address. Please try again later.",
 } as const;
 
 /**
@@ -54,6 +63,7 @@ export async function POST(request: NextRequest) {
     const formData: ContactFormData = {
       name: body.name || "",
       email: body.email || "",
+      interest: body.interest || "",
       message: body.message || "",
     };
 
@@ -69,6 +79,53 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Rate limiting: Check IP-based rate limit
+    const clientIp = getClientIp(request);
+    const ipRateLimit = checkIpRateLimit(clientIp);
+    if (!ipRateLimit.allowed) {
+      const resetTimeSeconds = Math.ceil(
+        (ipRateLimit.resetTime - Date.now()) / 1000
+      );
+      return NextResponse.json(
+        {
+          message: API_ERROR_MESSAGES.RATE_LIMIT_IP,
+          retryAfter: resetTimeSeconds,
+        },
+        {
+          status: HTTP_STATUS.TOO_MANY_REQUESTS,
+          headers: {
+            "Retry-After": resetTimeSeconds.toString(),
+            "X-RateLimit-Limit": "5",
+            "X-RateLimit-Remaining": "0",
+            "X-RateLimit-Reset": new Date(ipRateLimit.resetTime).toISOString(),
+          },
+        }
+      );
+    }
+
+    // Rate limiting: Check email-based rate limit
+    const emailRateLimit = checkEmailRateLimit(formData.email);
+    if (!emailRateLimit.allowed) {
+      const resetTimeSeconds = Math.ceil(
+        (emailRateLimit.resetTime - Date.now()) / 1000
+      );
+      return NextResponse.json(
+        {
+          message: API_ERROR_MESSAGES.RATE_LIMIT_EMAIL,
+          retryAfter: resetTimeSeconds,
+        },
+        {
+          status: HTTP_STATUS.TOO_MANY_REQUESTS,
+          headers: {
+            "Retry-After": resetTimeSeconds.toString(),
+            "X-RateLimit-Limit": "3",
+            "X-RateLimit-Remaining": "0",
+            "X-RateLimit-Reset": new Date(emailRateLimit.resetTime).toISOString(),
+          },
+        }
+      );
+    }
+
     // Format payload with metadata for automation tracking
     // This structure is designed for easy consumption by n8n webhooks
     const payload = formatContactPayload(formData);
@@ -80,9 +137,8 @@ export async function POST(request: NextRequest) {
       source: payload.source,
     });
 
-    // TODO: n8n Webhook Integration
-    // Uncomment the following code to forward submissions to n8n:
-    /*
+    // n8n Webhook Integration
+    // Forwards submissions to n8n workflow for AI response generation
     const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL;
     if (n8nWebhookUrl) {
       try {
@@ -103,7 +159,7 @@ export async function POST(request: NextRequest) {
         // Log error but don't fail the request
       }
     }
-    */
+    
 
     // AI Response Generation Point:
     // After n8n receives the webhook, the workflow would:
@@ -121,7 +177,13 @@ export async function POST(request: NextRequest) {
           timestamp: payload.timestamp,
         },
       },
-      { status: HTTP_STATUS.OK }
+      {
+        status: HTTP_STATUS.OK,
+        headers: {
+          "X-RateLimit-IP-Remaining": ipRateLimit.remaining.toString(),
+          "X-RateLimit-Email-Remaining": emailRateLimit.remaining.toString(),
+        },
+      }
     );
   } catch (error) {
     console.error("Error processing contact form:", error);
